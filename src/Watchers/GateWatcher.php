@@ -52,7 +52,14 @@ class GateWatcher extends Watcher
             return;
         }
 
-        $caller = $this->getCallerFromStackTrace([0, 1]);
+        $caller = $this->getCallerFromStackTrace([0, 1]) ??
+            $this->getCallerFromStackTrace([0, 1], function ($frame) {
+                $middlewarePath = base_path(
+                    str_replace('/', DIRECTORY_SEPARATOR, 'vendor/laravel/framework/src/Illuminate/Auth/Middleware/Authorize.php')
+                );
+
+                return Str::contains($frame['file'] ?? null, $middlewarePath);
+            });
 
         Telescope::recordGate(IncomingEntry::make([
             'ability' => $ability,

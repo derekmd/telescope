@@ -10,7 +10,7 @@ trait FetchesStackTrace
      * Find the first frame in the stack trace outside of Telescope/Laravel.
      *
      * @param  string|array  $forgetLines
-     * @return array
+     * @return array|null
      */
     protected function getCallerFromStackTrace($forgetLines = 0)
     {
@@ -24,6 +24,12 @@ trait FetchesStackTrace
             return ! Str::contains($frame['file'],
                 base_path('vendor'.DIRECTORY_SEPARATOR.$this->ignoredVendorPath())
             );
+        }, function () use ($trace) {
+            return $trace->first(function ($frame) {
+                return Str::contains($frame['file'] ?? null,
+                    base_path('vendor'.DIRECTORY_SEPARATOR.'laravel'.DIRECTORY_SEPARATOR.'octane')
+                );
+            });
         });
     }
 
